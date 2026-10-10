@@ -1,0 +1,823 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Protalk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Karla:ital,wght@0,400;0,500;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky header + hash-routed "pages"; each page is a stack of left-aligned sections on a 1180px wrap.
+   Signature: a live call-log card (thermostat-readout mono) beside a wide, sturdy display face. */
+:root{
+  --bg:#F3F3EA;          /* sage-white, a little warm */
+  --surface:#FCFCF6;
+  --surface-2:#E9EADC;
+  --ink:#1B2A20;
+  --muted:#58655A;
+  --line:#D5D7C6;
+  --brand:#24503A;       /* grove green */
+  --on-brand:#F3F3EA;
+  --brand-text:#24503A;
+  --sun:#EDA12C;         /* marigold, North County sun */
+  --on-sun:#231703;
+  --cool:#2F6F8F;
+  --heat:#B4462A;
+  --shadow:0 1px 0 rgba(27,42,32,.04),0 12px 32px -18px rgba(27,42,32,.35);
+  --f-display:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Karla",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#111813;--surface:#18221B;--surface-2:#1F2B23;--ink:#ECEFE4;--muted:#A2AD9F;--line:#2C3A30;
+  --brand:#9DD0AE;--on-brand:#0E1711;--brand-text:#9DD0AE;--sun:#F2B14C;--on-sun:#231703;
+  --cool:#7FB7D3;--heat:#E68A6C;--shadow:0 1px 0 rgba(0,0,0,.3),0 14px 34px -18px rgba(0,0,0,.8);color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111813;--surface:#18221B;--surface-2:#1F2B23;--ink:#ECEFE4;--muted:#A2AD9F;--line:#2C3A30;
+  --brand:#9DD0AE;--on-brand:#0E1711;--brand-text:#9DD0AE;--sun:#F2B14C;--on-sun:#231703;
+  --cool:#7FB7D3;--heat:#E68A6C;--shadow:0 1px 0 rgba(0,0,0,.3),0 14px 34px -18px rgba(0,0,0,.8);color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.6}
+a{color:var(--brand-text)}
+:focus-visible{outline:3px solid var(--sun);outline-offset:3px;border-radius:4px}
+.wrap{max-width:1180px;margin-inline:auto;padding-inline:20px}
+
+/* type scale */
+h1,h2,h3,h4{font-family:var(--f-display);font-stretch:118%;line-height:1.05;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(2.3rem,5.6vw,4.2rem);font-weight:850}
+h2{font-size:clamp(1.8rem,3.6vw,2.6rem);font-weight:800}
+h3{font-size:1.3rem;font-weight:750}
+h4{font-size:1.05rem;font-weight:700;font-stretch:108%}
+p{margin:0}
+.lede{font-size:1.18rem;color:var(--muted);max-width:58ch}
+.eyebrow{font-family:var(--f-mono);font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.mono{font-family:var(--f-mono)}
+.muted{color:var(--muted)}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:20px;min-height:64px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-family:var(--f-display);font-stretch:125%;font-weight:850;font-size:1.35rem;letter-spacing:-.02em}
+.logo b{color:var(--sun)}
+.logo svg{width:30px;height:30px;flex:none}
+.nav{display:flex;gap:4px;margin-left:auto;align-items:center}
+.nav a{text-decoration:none;color:var(--ink);font-weight:500;padding:8px 12px;border-radius:999px;font-size:.98rem}
+.nav a:hover{background:var(--surface-2)}
+.nav a[aria-current="page"]{background:var(--surface-2);font-weight:700}
+.nav-toggle{display:none;margin-left:auto;background:none;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:8px 12px;font:inherit;font-weight:700;cursor:pointer}
+@media (max-width:920px){
+  .nav-toggle{display:block}
+  .nav{display:none;position:absolute;left:0;right:0;top:100%;flex-direction:column;align-items:stretch;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 20px 18px}
+  .nav.open{display:flex}
+  .nav a{padding:12px 10px;border-radius:10px}
+  .nav .btn{justify-content:center;margin-top:6px}
+}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:10px;text-decoration:none;font-family:var(--f-body);font-weight:700;font-size:1rem;padding:13px 20px;border-radius:12px;border:2px solid transparent;cursor:pointer;line-height:1.1}
+.btn-brand{background:var(--brand);color:var(--on-brand)}
+.btn-brand:hover{filter:brightness(1.08)}
+.btn-sun{background:var(--sun);color:var(--on-sun)}
+.btn-sun:hover{filter:brightness(1.05)}
+.btn-line{border-color:var(--ink);color:var(--ink);background:transparent}
+.btn-line:hover{background:var(--surface-2)}
+.btn-sm{padding:9px 14px;font-size:.92rem;border-radius:10px}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+
+/* pages */
+main{padding-block:48px 0}
+.page{display:grid;gap:104px}
+.page[hidden]{display:none!important}
+section{display:grid;gap:28px;min-width:0}
+.sec-head{display:grid;gap:12px;max-width:760px}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1.08fr .92fr;gap:56px;align-items:start}
+.hero-copy{display:grid;gap:24px;padding-top:12px;min-width:0}
+.hero h1 em{font-style:normal;color:var(--brand-text);background:linear-gradient(transparent 62%,color-mix(in srgb,var(--sun) 55%,transparent) 62%)}
+.trust{display:flex;flex-wrap:wrap;gap:8px 18px;color:var(--muted);font-size:.95rem}
+.trust span{display:inline-flex;align-items:center;gap:7px}
+.trust span::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--brand-text)}
+@media (max-width:960px){.hero{grid-template-columns:1fr;gap:36px}}
+
+/* demo number block */
+.dial{display:grid;gap:6px;padding:18px 20px;border-radius:16px;background:var(--surface);border:1px solid var(--line);max-width:460px}
+.dial .num{font-family:var(--f-display);font-stretch:112%;font-weight:850;font-size:clamp(1.7rem,4vw,2.2rem);letter-spacing:.01em;font-variant-numeric:tabular-nums;color:var(--ink);text-decoration:none;user-select:all}
+.dial .row{gap:10px}
+.copy{background:none;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:6px 10px;font:inherit;font-size:.85rem;font-weight:700;cursor:pointer}
+.copy:hover{background:var(--surface-2)}
+
+/* call log card */
+.callcard{background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);overflow:hidden;min-width:0}
+.callcard-top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line);background:var(--surface-2)}
+.live{display:inline-flex;align-items:center;gap:8px;font-family:var(--f-mono);font-size:.78rem;letter-spacing:.06em;text-transform:uppercase}
+.live i{width:9px;height:9px;border-radius:50%;background:var(--heat);box-shadow:0 0 0 0 color-mix(in srgb,var(--heat) 60%,transparent);animation:pulse 2s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 9px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.log{list-style:none;margin:0;padding:16px 18px;display:grid;gap:12px}
+.log li{display:grid;grid-template-columns:44px 1fr;gap:10px;font-size:.96rem;line-height:1.45;transition:opacity .35s,transform .35s}
+.log li.pending{opacity:0;transform:translateY(6px)}
+.log time{font-family:var(--f-mono);font-size:.76rem;color:var(--muted);padding-top:3px;font-variant-numeric:tabular-nums}
+.log .who{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;display:block;color:var(--muted)}
+.log .pt .who{color:var(--brand-text)}
+.log .tag{display:inline-block;margin-top:4px;font-family:var(--f-mono);font-size:.7rem;padding:2px 7px;border-radius:6px;background:var(--surface-2);color:var(--muted)}
+.appt{margin:4px 18px 18px;padding:14px 16px;border-radius:14px;background:var(--brand);color:var(--on-brand);display:grid;grid-template-columns:auto 1fr;gap:4px 14px;align-items:center;transition:opacity .4s,transform .4s}
+.appt.pending{opacity:0;transform:translateY(10px)}
+.appt .big{grid-row:span 2;font-family:var(--f-display);font-stretch:110%;font-weight:850;font-size:1.6rem;line-height:1;text-align:center;padding-right:14px;border-right:1px solid color-mix(in srgb,var(--on-brand) 30%,transparent)}
+.appt .big small{display:block;font-family:var(--f-mono);font-size:.68rem;font-weight:500;letter-spacing:.1em;margin-top:4px}
+.appt strong{font-size:1rem}
+.appt span{font-family:var(--f-mono);font-size:.78rem;opacity:.85}
+.callcard-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:0 18px 16px;flex-wrap:wrap}
+.callcard-foot small{color:var(--muted);font-size:.82rem}
+
+/* steps strip (a real sequence) */
+.steps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;border-top:2px solid var(--ink)}
+.step{display:grid;gap:8px;align-content:start;padding:18px 18px 4px 0}
+.step + .step{padding-left:18px;border-left:1px solid var(--line)}
+.step .n{font-family:var(--f-mono);font-size:.8rem;color:var(--muted)}
+.step p{color:var(--muted);font-size:.96rem}
+.step.alert h4{color:var(--heat)}
+@media (max-width:900px){.steps{grid-template-columns:1fr 1fr}.step,.step + .step{padding:16px 14px 16px 0;border-left:0;border-bottom:1px solid var(--line)}}
+@media (max-width:520px){.steps{grid-template-columns:1fr}}
+
+/* split panels */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start}
+.split > *{min-width:0}
+@media (max-width:860px){.split{grid-template-columns:1fr;gap:28px}}
+
+/* local band */
+.band{background:var(--brand);color:var(--on-brand);border-radius:26px;padding:clamp(28px,5vw,56px);display:grid;grid-template-columns:1.1fr .9fr;gap:40px;position:relative;overflow:hidden}
+.band > *{min-width:0;position:relative}
+.band a:not(.btn){color:var(--on-brand)}
+.band .eyebrow{color:color-mix(in srgb,var(--on-brand) 75%,transparent)}
+.band p{color:color-mix(in srgb,var(--on-brand) 88%,transparent)}
+.band .hills{position:absolute;left:0;right:0;bottom:-2px;width:100%;height:90px;opacity:.16}
+.band .hills path{fill:var(--on-brand)}
+@media (max-width:860px){.band{grid-template-columns:1fr}}
+.promise{list-style:none;margin:0;padding:0;display:grid;gap:14px}
+.promise li{display:grid;grid-template-columns:28px 1fr;gap:10px}
+.promise svg{width:22px;height:22px;margin-top:3px}
+.promise svg path{stroke:var(--sun);fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-family:var(--f-mono);font-size:.82rem;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:var(--surface)}
+.band .chip{background:transparent;border-color:color-mix(in srgb,var(--on-brand) 35%,transparent);color:var(--on-brand)}
+
+/* calculator */
+.calc{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:clamp(20px,4vw,36px);display:grid;grid-template-columns:1fr 1fr;gap:36px}
+.calc > *{min-width:0}
+@media (max-width:860px){.calc{grid-template-columns:1fr}}
+.field{display:grid;gap:6px}
+.field label{font-weight:700;display:flex;justify-content:space-between;gap:10px}
+.field label output{font-family:var(--f-mono);font-weight:500;color:var(--brand-text);font-variant-numeric:tabular-nums}
+.field small{color:var(--muted);font-size:.86rem}
+input[type=range]{width:100%;accent-color:var(--brand)}
+.fields{display:grid;gap:20px}
+.result{display:grid;gap:18px;align-content:start;padding:22px;border-radius:16px;background:var(--surface-2)}
+.result .big{font-family:var(--f-display);font-stretch:112%;font-weight:850;font-size:clamp(2.4rem,6vw,3.4rem);line-height:1;font-variant-numeric:tabular-nums;color:var(--brand-text)}
+.result dl{display:grid;grid-template-columns:1fr auto;gap:8px 16px;margin:0;font-size:.95rem}
+.result dt{color:var(--muted)}
+.result dd{margin:0;font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right}
+
+/* cards (notes, scenarios) */
+.grid3{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px;display:grid;gap:10px;align-content:start;min-width:0}
+a.card{text-decoration:none;color:var(--ink);transition:transform .2s,border-color .2s}
+a.card:hover{transform:translateY(-3px);border-color:var(--brand-text)}
+.card .meta{font-family:var(--f-mono);font-size:.76rem;color:var(--muted);letter-spacing:.04em}
+.card p{color:var(--muted);font-size:.97rem}
+.card .go{font-weight:700;color:var(--brand-text);margin-top:4px}
+.kind{justify-self:start;font-family:var(--f-mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:6px;border:1px solid currentColor}
+.kind.cool{color:var(--cool)}.kind.heat{color:var(--heat)}.kind.plain{color:var(--brand-text)}
+blockquote.say{margin:0;padding:12px 14px;border-left:3px solid var(--sun);background:var(--surface-2);border-radius:0 10px 10px 0;font-style:italic}
+
+/* checklist */
+.check{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.check li{display:grid;grid-template-columns:26px 1fr;gap:10px}
+.check li::before{content:"";width:18px;height:18px;margin-top:4px;border-radius:5px;border:2px solid var(--brand-text);background:linear-gradient(var(--brand-text),var(--brand-text)) center/8px 8px no-repeat}
+
+/* timeline (real sequence) */
+.timeline{list-style:none;margin:0;padding:0;display:grid;gap:0;border-left:2px solid var(--line);margin-left:8px}
+.timeline li{position:relative;padding:0 0 28px 28px;display:grid;gap:6px}
+.timeline li::before{content:"";position:absolute;left:-9px;top:4px;width:16px;height:16px;border-radius:50%;background:var(--bg);border:3px solid var(--brand-text)}
+.timeline .when{font-family:var(--f-mono);font-size:.78rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.timeline p{color:var(--muted)}
+
+/* article */
+.article{max-width:68ch;display:grid;gap:20px}
+.article p,.article li{font-size:1.06rem}
+.article h3{margin-top:12px}
+.article ul{margin:0;padding-left:1.2em;display:grid;gap:8px}
+.back{font-weight:700;text-decoration:none}
+.note-box{padding:14px 16px;border-radius:12px;background:var(--surface-2);font-size:.92rem;color:var(--muted)}
+
+/* faq */
+.faq{display:grid;gap:10px;max-width:860px}
+.faq details{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:4px 20px}
+.faq summary{cursor:pointer;font-weight:700;font-size:1.08rem;padding:14px 0;list-style:none;display:flex;justify-content:space-between;gap:16px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";font-family:var(--f-mono);color:var(--brand-text);font-size:1.3rem;line-height:1}
+.faq details[open] summary::after{content:"\2013"}
+.faq details p{padding:0 0 16px;color:var(--muted)}
+
+/* contact */
+.contact-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:22px}
+.contact-grid > *{min-width:0}
+@media (max-width:860px){.contact-grid{grid-template-columns:1fr}}
+.book{background:var(--sun);color:var(--on-sun);border-radius:22px;padding:clamp(22px,4vw,36px);display:grid;gap:18px;align-content:start}
+.book .btn-brand{background:var(--on-sun);color:var(--sun)}
+.book ol{margin:0;padding-left:1.2em;display:grid;gap:6px}
+.lines{display:grid;gap:16px}
+.line{display:grid;gap:4px}
+.line .v{font-family:var(--f-mono);font-size:1.05rem;word-break:break-word;user-select:all}
+
+/* pricing (hidden until enabled) */
+.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+.plan .price{font-family:var(--f-display);font-stretch:112%;font-weight:850;font-size:2rem}
+
+/* cta strip */
+.cta{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:20px;padding:28px 0;border-top:2px solid var(--ink);border-bottom:1px solid var(--line)}
+
+/* footer */
+footer{margin-top:104px;border-top:1px solid var(--line);padding-block:40px 32px;color:var(--muted);font-size:.93rem}
+footer .wrap{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:28px}
+footer .wrap > *{min-width:0}
+footer h4{color:var(--ink);margin-bottom:10px}
+footer ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+footer a{color:var(--muted);text-decoration:none}
+footer a:hover{color:var(--ink)}
+footer .fine{grid-column:1/-1;border-top:1px solid var(--line);padding-top:18px;font-size:.84rem}
+@media (max-width:760px){footer .wrap{grid-template-columns:1fr}}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-weight:700;font-size:.92rem;z-index:50}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="#home" aria-label="Protalk home">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3C8.8 3 3 8.4 3 15c0 3.2 1.4 6.1 3.6 8.3L5 29l6.1-2.6c1.5.5 3.2.8 4.9.8 7.2 0 13-5.4 13-12S23.2 3 16 3z" fill="var(--brand)"/><circle cx="16" cy="15" r="6" fill="none" stroke="var(--sun)" stroke-width="2.6"/><path d="M16 15l3.2-3" stroke="var(--sun)" stroke-width="2.6" stroke-linecap="round"/></svg>
+      <span>protalk<b>.</b></span>
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="nav">Menu</button>
+    <nav class="nav" id="nav" aria-label="Main">
+      <a href="#home">Home</a>
+      <a href="#how-it-works">How it works</a>
+      <a href="#demo">Try the demo</a>
+      <a href="#field-notes">Field notes</a>
+      <a href="#about">Who we are</a>
+      <a href="#faq">FAQ</a>
+      <a href="#pricing" data-pricing-link hidden>Pricing</a>
+      <a class="btn btn-sun btn-sm" href="#contact">Book a consult</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- ============ HOME ============ -->
+<div class="page" data-page="home">
+  <section class="hero">
+    <div class="hero-copy">
+      <span class="eyebrow">AI phone answering for HVAC · Built in San Marcos, CA</span>
+      <h1>Every call to your shop, <em>answered and booked.</em></h1>
+      <p class="lede">Protalk picks up when your techs can't. It screens for emergencies, books the job on your calendar, and hands the urgent ones to a real person. A local team sets it up with you and tunes it alongside you.</p>
+      <div class="dial">
+        <span class="eyebrow">Call the demo line. Play the homeowner.</span>
+        <div class="row">
+          <a class="num" data-demo-number data-tel href="#">(760) 555-0199</a>
+          <button class="copy" data-copy="demo" type="button">Copy</button>
+        </div>
+        <small class="muted">Answers 24/7 as a sample HVAC shop. It's an AI and the call is recorded.</small>
+      </div>
+      <div class="row">
+        <a class="btn btn-brand" href="#contact">Book a free consult</a>
+        <a class="btn btn-line" href="#demo">What to try on the call</a>
+      </div>
+      <div class="trust">
+        <span>Set up in person at your shop</span>
+        <span>Emergencies go to a human</span>
+        <span>You approve every script</span>
+      </div>
+    </div>
+
+    <aside class="callcard" aria-label="Sample call, transcript">
+      <div class="callcard-top">
+        <span class="live"><i></i>Sat 6:42 PM · office closed</span>
+        <span class="mono muted" style="font-size:.78rem">Sample call</span>
+      </div>
+      <ol class="log" id="log">
+        <li class="pt"><time>0:00</time><div><span class="who">Protalk</span>Thanks for calling North County Comfort Air. Heads-up, I'm an AI assistant and this call is recorded. How can I help?</div></li>
+        <li><time>0:07</time><div><span class="who">Caller</span>Hey, my AC's running but it's blowing warm air. It's 91 in the house.</div></li>
+        <li class="pt"><time>0:13</time><div><span class="who">Protalk</span>Not fun in this heat. Any burning smell, or anyone at home at risk from the heat?<span class="tag">emergency screen</span></div></li>
+        <li><time>0:19</time><div><span class="who">Caller</span>No, just hot. We're off Twin Oaks Valley Road, 92078.</div></li>
+        <li class="pt"><time>0:24</time><div><span class="who">Protalk</span>You're in our area. I've got tomorrow 8 to 10 or 1 to 3. Which works?<span class="tag">checked calendar</span></div></li>
+        <li><time>0:30</time><div><span class="who">Caller</span>Morning, please.</div></li>
+        <li class="pt"><time>0:32</time><div><span class="who">Protalk</span>You're booked. A text with the details is on its way.</div></li>
+      </ol>
+      <div class="appt" id="appt">
+        <div class="big">8–10<small>AM · TMRW</small></div>
+        <strong>AC blowing warm air</strong>
+        <span>92078 · booked by Protalk · owner texted</span>
+      </div>
+      <div class="callcard-foot">
+        <small>Illustration of a typical call.</small>
+        <button class="btn btn-line btn-sm" id="replay" type="button">Replay the call</button>
+      </div>
+    </aside>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="eyebrow">What happens on every call</span>
+      <h2>From ring to booked, in about a minute.</h2>
+    </div>
+    <div class="steps">
+      <div class="step"><span class="n">01</span><h4>Picks up</h4><p>Answers on the first ring and says up front that it's an AI and the call is recorded.</p></div>
+      <div class="step alert"><span class="n">02</span><h4>Checks for danger</h4><p>Gas smell or a CO alarm? It gets your on-call tech on the line and texts you.</p></div>
+      <div class="step"><span class="n">03</span><h4>Gets the details</h4><p>Name, callback number, address, what's wrong, and how urgent it is.</p></div>
+      <div class="step"><span class="n">04</span><h4>Offers real times</h4><p>Reads your calendar and only offers windows you actually have open.</p></div>
+      <div class="step"><span class="n">05</span><h4>Books and texts</h4><p>Puts the job on your calendar and sends a summary to you and the customer.</p></div>
+    </div>
+    <div><a class="back" href="#how-it-works">See the full call flow →</a></div>
+  </section>
+
+  <section class="calc" aria-labelledby="calcTitle">
+    <div class="fields">
+      <div class="sec-head" style="gap:8px">
+        <span class="eyebrow">Run your own numbers</span>
+        <h2 id="calcTitle" style="font-size:clamp(1.6rem,3vw,2.1rem)">What are missed calls costing you?</h2>
+        <p class="muted">The starting values are examples. Slide them to match your shop.</p>
+      </div>
+      <div class="field">
+        <label for="cCalls">Inbound calls per week <output id="oCalls">60</output></label>
+        <input id="cCalls" type="range" min="10" max="300" step="5" value="60">
+      </div>
+      <div class="field">
+        <label for="cMiss">Calls that go unanswered <output id="oMiss">18%</output></label>
+        <input id="cMiss" type="range" min="2" max="50" step="1" value="18">
+        <small>Published studies of home-services calls land between about 14% and 27%, and higher on weekends.</small>
+      </div>
+      <div class="field">
+        <label for="cBook">Missed callers who'd have booked <output id="oBook">35%</output></label>
+        <input id="cBook" type="range" min="5" max="80" step="1" value="35">
+      </div>
+      <div class="field">
+        <label for="cTicket">Average service ticket <output id="oTicket">$450</output></label>
+        <input id="cTicket" type="range" min="150" max="1500" step="25" value="450">
+      </div>
+    </div>
+    <div class="result" aria-live="polite">
+      <span class="eyebrow">Revenue walking out each month</span>
+      <div class="big" id="rRev">$7,370</div>
+      <dl>
+        <dt>Missed calls a month</dt><dd id="rMissed">47</dd>
+        <dt>Jobs those callers would have booked</dt><dd id="rJobs">16</dd>
+        <dt>Per year</dt><dd id="rYear">$88,450</dd>
+      </dl>
+      <p class="muted" style="font-size:.9rem">That's service calls only. One missed replacement lead can be worth more than all of it. Every caller who hangs up usually dials the next shop on Google.</p>
+      <a class="btn btn-brand" href="#contact" style="justify-self:start">Find your real number with us</a>
+    </div>
+  </section>
+
+  <section class="band">
+    <div style="display:grid;gap:18px;align-content:start">
+      <span class="eyebrow">Locally built</span>
+      <h2>We're down the road, not a ticket queue.</h2>
+      <p>Protalk is a small team in San Marcos. We work with a handful of North County shops at a time. That way, when something needs changing, you text a person who has been to your shop and knows how you run your calls.</p>
+      <div class="chips" aria-label="Service area">
+        <span class="chip">San Marcos</span><span class="chip">Escondido</span><span class="chip">Vista</span><span class="chip">Carlsbad</span><span class="chip">Oceanside</span><span class="chip">Encinitas</span><span class="chip">Poway</span><span class="chip">Fallbrook</span><span class="chip">Valley Center</span><span class="chip">Rancho Bernardo</span>
+      </div>
+      <div><a class="btn btn-sun" href="#about">Meet the team</a></div>
+    </div>
+    <ul class="promise">
+      <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg><div><strong>Set up at your shop.</strong> We sit with you, listen to how your office answers, and write the call script together.</div></li>
+      <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg><div><strong>A direct line to us.</strong> No support portal. You text the people who built your setup.</div></li>
+      <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg><div><strong>Monthly call review.</strong> We go through the calls with you and tighten anything that sounded off.</div></li>
+      <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg><div><strong>Your rules, your data.</strong> You decide what it says, what it books, and when it hands off.</div></li>
+    </ul>
+    <svg class="hills" viewBox="0 0 1200 90" preserveAspectRatio="none" aria-hidden="true"><path d="M0 90V62C80 50 150 40 230 46S380 30 460 22s140 16 220 20 150-30 250-36 170 26 270 34V90z"/></svg>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="eyebrow">Field notes</span>
+      <h2>Short reads for shop owners.</h2>
+    </div>
+    <div class="grid3" id="homeNotes"></div>
+  </section>
+
+  <div class="cta">
+    <div style="display:grid;gap:6px">
+      <h3>Hear it first, then let's talk.</h3>
+      <p class="muted">Call the demo, then book 30 minutes. We'll come to you.</p>
+    </div>
+    <div class="row">
+      <a class="btn btn-line" href="#demo">Try the demo</a>
+      <a class="btn btn-brand" href="#contact">Book a consult</a>
+    </div>
+  </div>
+</div>
+
+<!-- ============ HOW IT WORKS ============ -->
+<div class="page" data-page="how-it-works" hidden>
+  <section class="sec-head">
+    <span class="eyebrow">How it works</span>
+    <h1 style="font-size:clamp(2rem,4.6vw,3.3rem)">One simple job: turn a ringing phone into a booked appointment.</h1>
+    <p class="lede">The flow is short on purpose. If a step doesn't help a homeowner get a time on your calendar, or keep someone safe, it isn't in there.</p>
+  </section>
+
+  <section class="split">
+    <ol class="timeline">
+      <li><span class="when">Ring</span><h3>Answered on the first ring</h3><p>Overflow while your CSR is on another line, lunch breaks, after 5, weekends. You choose when Protalk takes the call and when it rings through to you first.</p></li>
+      <li><span class="when">First 5 seconds</span><h3>Honest greeting</h3><p>It greets the caller with your shop's name and says it's an AI and the call is recorded. California requires everyone's consent to record, so this line is never optional.</p></li>
+      <li><span class="when">Emergency screen</span><h3>Danger goes to a person</h3><p>A gas smell, a CO alarm, or sparking at the unit means it stops booking and transfers to your on-call tech. If nobody picks up, it tells the caller to step outside and call 911 or SDG&amp;E, then texts you.</p></li>
+      <li><span class="when">Intake</span><h3>The details your dispatcher asks for</h3><p>Name, callback number, service address, the problem in the caller's own words, system age if they know it, and any pets or gate codes.</p></li>
+      <li><span class="when">Service area</span><h3>Checks it's your territory</h3><p>Uses your ZIP code list. Out-of-area callers get a polite no and a referral if you want to give one.</p></li>
+      <li><span class="when">Scheduling</span><h3>Offers windows you actually have</h3><p>Reads your calendar live and offers two choices. It never promises an arrival time or a price you haven't approved.</p></li>
+      <li><span class="when">Booked</span><h3>On your calendar, in your inbox</h3><p>The appointment lands with full notes, the caller gets a confirmation, and you get a summary text and the recording.</p></li>
+    </ol>
+    <div style="display:grid;gap:18px;position:sticky;top:96px">
+      <div class="card">
+        <span class="eyebrow">What you'll see after a call</span>
+        <div class="mono" style="font-size:.88rem;line-height:1.7;background:var(--surface-2);padding:14px;border-radius:12px;overflow-x:auto">
+          <strong>NEW BOOKING</strong> · after-hours<br>
+          Maria G. · (760) 555-01xx<br>
+          Off Twin Oaks Valley Rd · 92078<br>
+          AC running, blowing warm air.<br>
+          Unit ~12 yrs. Dog in backyard.<br>
+          <span style="color:var(--brand-text)">Tue 8–10 AM · confirmed</span><br>
+          ▶ recording · 0:41
+        </div>
+        <p>A text like this hits your phone the moment the call ends. Sample shown.</p>
+      </div>
+      <div class="card">
+        <span class="eyebrow">What it won't do</span>
+        <ul class="check" style="font-size:.97rem">
+          <li>Quote repair or replacement prices you haven't approved</li>
+          <li>Diagnose equipment over the phone</li>
+          <li>Pretend to be a person</li>
+          <li>Book outside your hours or service area</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="eyebrow">What we connect</span>
+      <h2>Works with the tools you already run.</h2>
+      <p class="muted">We start with what your shop uses today. If it's not on the list, tell us and we'll look at building the connection.</p>
+    </div>
+    <div class="grid3">
+      <div class="card"><span class="kind plain">Live now</span><h4>Your shop's phone number</h4><p>Forward overflow and after-hours calls to Protalk. Your number stays the same.</p></div>
+      <div class="card"><span class="kind plain">Live now</span><h4>Google Calendar</h4><p>Reads open windows and writes bookings with full notes.</p></div>
+      <div class="card"><span class="kind cool">On the roadmap</span><h4>Jobber &amp; Housecall Pro</h4><p>Book straight into your field-service software. Ask us where it stands.</p></div>
+    </div>
+  </section>
+
+  <div class="cta">
+    <h3>Want to hear the flow for yourself?</h3>
+    <div class="row"><a class="btn btn-sun" href="#demo">Call the demo</a><a class="btn btn-line" href="#contact">Book a consult</a></div>
+  </div>
+</div>
+
+<!-- ============ DEMO ============ -->
+<div class="page" data-page="demo" hidden>
+  <section class="split">
+    <div style="display:grid;gap:22px;align-content:start">
+      <span class="eyebrow">Try the demo</span>
+      <h1 style="font-size:clamp(2rem,4.6vw,3.3rem)">Call it like you're one of your own customers.</h1>
+      <p class="lede">The demo line answers as a sample HVAC shop. Throw it the calls your office actually gets: a broken AC in August, a confused caller, someone outside your area.</p>
+      <div class="dial">
+        <span class="eyebrow">Demo line · 24/7</span>
+        <div class="row">
+          <a class="num" data-demo-number data-tel href="#">(760) 555-0199</a>
+          <button class="copy" data-copy="demo" type="button">Copy</button>
+        </div>
+        <small class="muted">It's an AI and the call is recorded so we can improve it. Please don't share real personal details.</small>
+      </div>
+    </div>
+    <div class="card" style="gap:16px">
+      <span class="eyebrow">Listen for these</span>
+      <ul class="check">
+        <li>It says it's an AI and that the call is recorded, right away</li>
+        <li>It asks about danger before anything else</li>
+        <li>It gets your name, number, address, and the problem without sounding like a form</li>
+        <li>It offers two real time windows instead of "someone will call you back"</li>
+        <li>It won't make up a price</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="eyebrow">Calls to try</span>
+      <h2>Pick a scenario and play the homeowner.</h2>
+    </div>
+    <div class="grid3">
+      <div class="card"><span class="kind cool">Cooling</span><h4>The August heat wave</h4><blockquote class="say">"My AC is running but it's blowing warm air and it's 93 inside."</blockquote><p>It should screen for heat risk, then offer the next open windows.</p></div>
+      <div class="card"><span class="kind heat">Heating</span><h4>The first cold night</h4><blockquote class="say">"The furnace won't kick on. It just clicks."</blockquote><p>Watch it ask the right follow-ups before booking.</p></div>
+      <div class="card"><span class="kind heat">Emergency</span><h4>Something smells wrong</h4><blockquote class="say">"I think I smell gas near the furnace."</blockquote><p>It should stop booking, tell you to get outside, and hand you to a person. The demo explains that handoff instead of dialing anyone.</p></div>
+      <div class="card"><span class="kind plain">Service area</span><h4>Too far out</h4><blockquote class="say">"Do you come out to Temecula?"</blockquote><p>It checks the ZIP list and gives a polite answer either way.</p></div>
+      <div class="card"><span class="kind plain">Pricing</span><h4>The price shopper</h4><blockquote class="say">"How much for a new system?"</blockquote><p>It won't guess. It books an estimate visit or takes a message for the owner.</p></div>
+      <div class="card"><span class="kind cool">Maintenance</span><h4>The tune-up</h4><blockquote class="say">"I just want my AC checked before summer."</blockquote><p>Routine work gets booked into the slower windows you choose.</p></div>
+    </div>
+  </section>
+
+  <div class="cta">
+    <div style="display:grid;gap:6px"><h3>Liked what you heard?</h3><p class="muted">We'll set one up with your shop's name, hours, and rules.</p></div>
+    <a class="btn btn-brand" href="#contact">Book a consult</a>
+  </div>
+</div>
+
+<!-- ============ FIELD NOTES ============ -->
+<div class="page" data-page="field-notes" hidden>
+  <section class="sec-head">
+    <span class="eyebrow">Field notes</span>
+    <h1 style="font-size:clamp(2rem,4.6vw,3.3rem)">What we're learning about HVAC phones.</h1>
+    <p class="lede">Plain-language notes for owners. No fluff, and we tell you where a number comes from.</p>
+  </section>
+  <section><div class="grid3" id="allNotes"></div></section>
+</div>
+
+<div class="page" data-page="note" hidden>
+  <article class="article" id="article"></article>
+</div>
+
+<!-- ============ ABOUT ============ -->
+<div class="page" data-page="about" hidden>
+  <section class="split">
+    <div style="display:grid;gap:22px;align-content:start">
+      <span class="eyebrow">Who we are</span>
+      <h1 style="font-size:clamp(2rem,4.6vw,3.3rem)">A small, local team that picks up our own phone too.</h1>
+      <p class="lede">Protalk started in San Marcos with a simple observation. The best HVAC shops around here are run by people who are on a roof or in an attic when the phone rings.</p>
+    </div>
+    <div class="card" style="gap:14px">
+      <span class="eyebrow">A note from the founder</span>
+      <p style="color:var(--ink)">I grew up around North County and I build software for a living. When I started calling local shops, the same thing kept happening: voicemail, a full mailbox, or a callback two days later. These are good businesses losing jobs simply because nobody could get to the phone.</p>
+      <p style="color:var(--ink)">So Protalk stays small on purpose. We take on a few shops at a time, we set each one up in person, and you'll always know exactly who to text when something needs to change.</p>
+      <p class="mono" style="color:var(--brand-text)">— Ethan, founder</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="eyebrow">Working together</span>
+      <h2>How a new shop gets started.</h2>
+    </div>
+    <ol class="timeline" style="max-width:760px">
+      <li><span class="when">Week 1 · At your shop</span><h3>We listen first</h3><p>We spend time with you or your CSR, hear how calls really go, and write down your rules: hours, ZIP codes, what's an emergency, and who's on call.</p></li>
+      <li><span class="when">Week 2 · Shadow mode</span><h3>It practices before it talks to customers</h3><p>We test the script against your real call types and you listen to the results. Nothing goes live until you sign off.</p></li>
+      <li><span class="when">Week 3 · Go live</span><h3>Start with overflow and after-hours</h3><p>Most shops begin with only the calls they're already missing. Your office keeps answering what it answers today.</p></li>
+      <li><span class="when">Every month</span><h3>Sit down and review</h3><p>We go through the calls together, look at what got booked, and fix anything that sounded off.</p></li>
+    </ol>
+  </section>
+
+  <section class="band">
+    <div style="display:grid;gap:16px;align-content:start">
+      <span class="eyebrow">What we believe</span>
+      <h2>Good phone manners are good business.</h2>
+    </div>
+    <ul class="promise">
+      <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg><div><strong>Be upfront.</strong> Callers always hear that they're talking to an AI.</div></li>
+      <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg><div><strong>Safety beats speed.</strong> Anything dangerous goes straight to a person.</div></li>
+      <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg><div><strong>Earn the next month.</strong> If it isn't booking jobs for you, we want to hear it and fix it.</div></li>
+    </ul>
+    <svg class="hills" viewBox="0 0 1200 90" preserveAspectRatio="none" aria-hidden="true"><path d="M0 90V62C80 50 150 40 230 46S380 30 460 22s140 16 220 20 150-30 250-36 170 26 270 34V90z"/></svg>
+  </section>
+</div>
+
+<!-- ============ FAQ ============ -->
+<div class="page" data-page="faq" hidden>
+  <section class="sec-head">
+    <span class="eyebrow">FAQ</span>
+    <h1 style="font-size:clamp(2rem,4.6vw,3.3rem)">Questions owners ask us.</h1>
+  </section>
+  <section class="faq">
+    <details open><summary>Is it a real person?</summary><p>No. It's an AI voice assistant, and it says so at the start of every call. We think customers deserve to know, and most of them just care that someone picked up and got them on the schedule.</p></details>
+    <details><summary>What happens with an emergency like a gas smell?</summary><p>It stops trying to book. It tells the caller to get to safety and transfers them to your on-call number, then texts you a summary. You decide what counts as an emergency for your shop.</p></details>
+    <details><summary>Will it replace my office person?</summary><p>That's not the goal. Most shops start with overflow and after-hours calls, the ones going to voicemail today. Your office keeps the relationships. Protalk catches what falls through.</p></details>
+    <details><summary>Are the calls recorded? Is that legal in California?</summary><p>Calls are recorded, and every caller hears that at the very start. California requires all parties to consent to recording, so the disclosure is built in and can't be turned off. This isn't legal advice; we're glad to walk your attorney through how it works.</p></details>
+    <details><summary>Does it work with my scheduling software?</summary><p>Today it books into Google Calendar. Jobber and Housecall Pro are next on our list. If you run something else, tell us during the consult.</p></details>
+    <details><summary>Can I change what it says?</summary><p>Yes. You approve the script before it goes live, and you can text us changes anytime, like a new service area, holiday hours, or a seasonal tune-up special.</p></details>
+    <details><summary>What does it cost?</summary><p>We're setting pricing with our first North County shops right now. Book a consult and we'll walk through what makes sense for the size of your shop.</p></details>
+    <details><summary>Where are you located?</summary><p>San Marcos, California. We work with shops across North County San Diego and can meet you at your shop.</p></details>
+  </section>
+  <div class="cta">
+    <h3>Didn't see your question?</h3>
+    <a class="btn btn-brand" href="#contact">Ask us directly</a>
+  </div>
+</div>
+
+<!-- ============ CONTACT ============ -->
+<div class="page" data-page="contact" hidden>
+  <section class="sec-head">
+    <span class="eyebrow">Book a consult</span>
+    <h1 style="font-size:clamp(2rem,4.6vw,3.3rem)">Let's talk about your phones.</h1>
+    <p class="lede">Thirty minutes, free, at your shop or over the phone. You'll leave knowing how many calls you're missing, whether or not you work with us.</p>
+  </section>
+  <section class="contact-grid">
+    <div class="book">
+      <span class="eyebrow" style="color:var(--on-sun);opacity:.75">Free 30-minute consult</span>
+      <h2>Pick a time that works.</h2>
+      <ol>
+        <li>We learn how your shop handles calls today.</li>
+        <li>We show you the demo set up for an HVAC shop.</li>
+        <li>You get an honest read on whether it's a fit.</li>
+      </ol>
+      <div><a class="btn btn-brand" data-book href="#" target="_blank" rel="noopener">Open the booking calendar ↗</a></div>
+    </div>
+    <div class="card lines">
+      <span class="eyebrow">Reach us directly</span>
+      <div class="line"><span class="muted">Office</span><div class="row"><span class="v" data-office-number>(760) 555-0142</span><button class="copy" data-copy="office" type="button">Copy</button></div></div>
+      <div class="line"><span class="muted">Email</span><div class="row"><span class="v" data-email>team@protalk.example</span><button class="copy" data-copy="email" type="button">Copy</button></div></div>
+      <div class="line"><span class="muted">Demo line</span><div class="row"><span class="v" data-demo-number>(760) 555-0199</span><button class="copy" data-copy="demo" type="button">Copy</button></div></div>
+      <div class="line"><span class="muted">Based in</span><span class="v">San Marcos, CA · North County San Diego</span></div>
+      <div class="line"><span class="muted">Hours</span><span class="v" data-hours>Mon–Fri 8 AM–6 PM · Sat by appointment</span></div>
+    </div>
+  </section>
+  <section>
+    <div class="sec-head"><span class="eyebrow">Where we work</span><h3>Shops across North County</h3></div>
+    <div class="chips"><span class="chip">San Marcos</span><span class="chip">Escondido</span><span class="chip">Vista</span><span class="chip">Carlsbad</span><span class="chip">Oceanside</span><span class="chip">Encinitas</span><span class="chip">Poway</span><span class="chip">Fallbrook</span><span class="chip">Valley Center</span><span class="chip">Rancho Bernardo</span><span class="chip">Bonsall</span><span class="chip">Ramona</span></div>
+  </section>
+</div>
+
+<!-- ============ PRICING (off until CONFIG.showPricing = true) ============ -->
+<div class="page" data-page="pricing" hidden>
+  <section class="sec-head">
+    <span class="eyebrow">Pricing</span>
+    <h1 style="font-size:clamp(2rem,4.6vw,3.3rem)">Simple pricing for small shops.</h1>
+    <p class="lede" id="pricingIntro"></p>
+  </section>
+  <section class="plans" id="plans"></section>
+</div>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div style="display:grid;gap:10px">
+      <a class="logo" href="#home" style="font-size:1.2rem"><span>protalk<b>.</b></span></a>
+      <p>AI phone answering for HVAC shops in North County San Diego. Built in San Marcos.</p>
+    </div>
+    <div>
+      <h4>Explore</h4>
+      <ul><li><a href="#how-it-works">How it works</a></li><li><a href="#demo">Try the demo</a></li><li><a href="#field-notes">Field notes</a></li><li><a href="#about">Who we are</a></li><li><a href="#faq">FAQ</a></li><li data-pricing-link hidden><a href="#pricing">Pricing</a></li></ul>
+    </div>
+    <div>
+      <h4>Contact</h4>
+      <ul><li data-office-number>(760) 555-0142</li><li data-email>team@protalk.example</li><li><a href="#contact">Book a consult</a></li></ul>
+    </div>
+    <p class="fine">Calls handled by Protalk are answered by an AI assistant and recorded with notice to the caller. © <span id="yr">2026</span> Protalk.</p>
+  </div>
+</footer>
+
+<script>
+/* ===================== EDIT ME =====================
+   Swap these placeholders for your real details. Everything on the page reads from here. */
+const CONFIG = {
+  demoNumber:   "(760) 555-0199",   // your Grok voice agent's number
+  officeNumber: "(760) 555-0142",
+  email:        "team@protalk.example",
+  hours:        "Mon–Fri 8 AM–6 PM · Sat by appointment",
+  bookingUrl:   "https://calendly.com/your-handle/protalk-consult", // paste your Calendly link
+  showPricing:  false,              // flip to true to add the Pricing page + nav link
+  pricingIntro: "Month to month. Set up in person at no charge.",
+  pricing: [
+    { name: "Overflow", price: "$—", per: "/mo", blurb: "After-hours and missed calls only.", items: ["24/7 answering", "Emergency handoff", "Calendar booking"] },
+    { name: "Front desk", price: "$—", per: "/mo", blurb: "Every call, every day.", items: ["Everything in Overflow", "Monthly call review", "Custom scripts"] }
+  ]
+};
+/* =================================================== */
+
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const telHref = n => "tel:+1" + n.replace(/\D/g, "").slice(-10);
+
+// fill config values
+$$("[data-demo-number]").forEach(el => { el.textContent = CONFIG.demoNumber; if (el.hasAttribute("data-tel")) el.href = telHref(CONFIG.demoNumber); });
+$$("[data-office-number]").forEach(el => el.textContent = CONFIG.officeNumber);
+$$("[data-email]").forEach(el => el.textContent = CONFIG.email);
+$$("[data-hours]").forEach(el => el.textContent = CONFIG.hours);
+$$("[data-book]").forEach(el => el.href = CONFIG.bookingUrl);
+$$("[data-pricing-link]").forEach(el => el.hidden = !CONFIG.showPricing);
+$("#yr").textContent = new Date().getFullYear();
+
+// pricing page (rendered only when enabled)
+if (CONFIG.showPricing) {
+  $("#pricingIntro").textContent = CONFIG.pricingIntro;
+  $("#plans").innerHTML = CONFIG.pricing.map(p => `
+    <div class="card plan"><h3>${p.name}</h3><div class="price">${p.price}<span class="muted" style="font-size:1rem">${p.per}</span></div>
+    <p>${p.blurb}</p><ul class="check">${p.items.map(i => `<li>${i}</li>`).join("")}</ul>
+    <a class="btn btn-brand" href="#contact" style="justify-self:start">Book a consult</a></div>`).join("");
+}
+
+// copy buttons
+let toastTimer;
+function toast(msg) {
+  let t = $(".toast"); if (!t) { t = document.createElement("div"); t.className = "toast"; t.setAttribute("role", "status"); document.body.appendChild(t); }
+  t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => t.hidden = true, 1800);
+}
+const copyVals = { demo: () => CONFIG.demoNumber, office: () => CONFIG.officeNumber, email: () => CONFIG.email };
+$$("[data-copy]").forEach(btn => btn.addEventListener("click", () => {
+  const val = copyVals[btn.dataset.copy]();
+  const fallback = () => {
+    const el = btn.parentElement.querySelector(".num, .v");
+    if (el) { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+    toast("Selected. Press Ctrl/Cmd+C to copy");
+  };
+  try { navigator.clipboard.writeText(val).then(() => toast("Copied " + val), fallback); } catch (e) { fallback(); }
+}));
+
+// field notes
+const NOTES = [
+  { id: "after-hours", kind: "cool", tag: "Calls", mins: 3, title: "The 5:01 problem",
+    sum: "Why the calls you miss after hours and on weekends are the ones that cost the most.",
+    body: `<p>Most HVAC shops answer the phone well from 8 to 5 on weekdays. The trouble starts after that. Call-tracking data from Invoca, as reported in industry write-ups, found weekend calls to home-services businesses go unanswered far more often than weekday calls. One breakdown put it at roughly 18% on weekdays against 41% on weekends.</p>
+    <h3>Why it matters more for HVAC</h3>
+    <p>Comfort calls are urgent. A homeowner with no AC on a hot Saturday rarely leaves a voicemail and waits until Monday. They hang up and call the next shop on the list.</p>
+    <h3>What you can do this week</h3>
+    <ul><li>Call your own shop at 6 PM on a Friday and listen to what a customer hears.</li><li>Check your voicemail box. If it fills up on weekends, those callers got nothing.</li><li>Decide what an after-hours caller should get: a booked time, a callback promise, or your on-call tech.</li></ul>
+    <div class="note-box">Numbers vary a lot by study and by shop. The best number is your own, which is what we measure during a consult.</div>` },
+  { id: "speed-to-lead", kind: "plain", tag: "Leads", mins: 3, title: "Speed to lead, in plain terms",
+    sum: "Five minutes versus thirty sounds small. It isn't.",
+    body: `<p>A well-known study by Dr. James Oldroyd with InsideSales.com looked at how quickly companies responded to new leads. It found the odds of reaching and qualifying a lead dropped sharply when the first contact came 30 minutes later instead of within 5.</p>
+    <p>That study is older and looked at business sales, not home services, so treat the exact numbers as a direction rather than a promise. The idea holds up anywhere people are comparing options: the first business to actually talk to them usually gets the job.</p>
+    <h3>Where shops lose speed</h3>
+    <ul><li>Web form leads that sit in an inbox until someone checks it</li><li>Google Local Services leads that get a callback hours later</li><li>Missed calls returned the next morning</li></ul>
+    <h3>The fix</h3>
+    <p>Get every new lead a real response within minutes, and get a booked time on the calendar during that first contact whenever possible.</p>` },
+  { id: "recording-ca", kind: "plain", tag: "Rules", mins: 4, title: "Recording calls in California",
+    sum: "California is an all-party consent state. Here's what that means for your phones.",
+    body: `<p>California law requires the consent of everyone on a call before it's recorded. For calls involving a cell phone, the rule applies whether or not the conversation is confidential. Violations can carry civil damages of $5,000 each, which is why class-action lawyers pay attention to it.</p>
+    <h3>How Protalk handles it</h3>
+    <ul><li>Every call opens with a clear notice that the caller is talking to an AI and the call is recorded.</li><li>That greeting is locked. It can't be skipped or shortened.</li><li>Recordings are used to improve your setup and to give you a record of what was said.</li></ul>
+    <h3>If you record calls today</h3>
+    <p>If your current phone system records calls, check that callers hear a notice before the conversation starts.</p>
+    <div class="note-box">This is a plain-language summary, not legal advice. Talk to a California attorney about your shop's specific setup.</div>` },
+  { id: "when-not-ai", kind: "heat", tag: "Safety", mins: 3, title: "When a call should never stay with an AI",
+    sum: "The short list of calls that go straight to a person, every time.",
+    body: `<p>An AI receptionist is great at intake and scheduling. It should never be the last word on a call where someone might be in danger. Here's the default list we set up with every shop, and you can add to it.</p>
+    <h3>Always hand off</h3>
+    <ul><li>Gas or rotten-egg smell</li><li>Carbon monoxide alarm going off</li><li>Sparking, smoke, or a burning smell from equipment</li><li>Someone vulnerable without heat or cooling in extreme weather</li></ul>
+    <h3>What the handoff looks like</h3>
+    <p>The assistant tells the caller what to do right now, like leaving the house and calling 911 or the gas company. Then it transfers to your on-call number and texts you the details. If nobody answers, the caller still got safety instructions and you still get the alert.</p>` }
+];
+const noteCard = n => `<a class="card" href="#note-${n.id}"><span class="kind ${n.kind}">${n.tag}</span><h4>${n.title}</h4><p>${n.sum}</p><span class="meta">${n.mins} min read</span></a>`;
+$("#homeNotes").innerHTML = NOTES.slice(0, 3).map(noteCard).join("");
+$("#allNotes").innerHTML = NOTES.map(noteCard).join("");
+
+// router
+const PAGES = ["home", "how-it-works", "demo", "field-notes", "about", "faq", "contact", "pricing"];
+function route() {
+  let h = location.hash.replace("#", "") || "home";
+  let page = h, note = null;
+  if (h.startsWith("note-")) { note = NOTES.find(n => "note-" + n.id === h); page = note ? "note" : "field-notes"; }
+  if (page === "pricing" && !CONFIG.showPricing) page = "home";
+  if (page !== "note" && !PAGES.includes(page)) page = "home";
+  if (note) {
+    $("#article").innerHTML = `<a class="back" href="#field-notes">← All field notes</a><span class="eyebrow">${note.tag} · ${note.mins} min read</span><h1 style="font-size:clamp(2rem,4.4vw,3rem)">${note.title}</h1><p class="lede">${note.sum}</p>${note.body}
+      <div class="cta" style="margin-top:12px"><h3>Want to see your shop's numbers?</h3><a class="btn btn-brand" href="#contact">Book a consult</a></div>`;
+  }
+  $$(".page").forEach(p => p.hidden = p.dataset.page !== page);
+  const navKey = page === "note" ? "field-notes" : page;
+  $$(".nav a").forEach(a => a.getAttribute("href") === "#" + navKey && !a.classList.contains("btn") ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
+  $("#nav").classList.remove("open"); $("#navToggle").setAttribute("aria-expanded", "false");
+  window.scrollTo(0, 0);
+}
+window.addEventListener("hashchange", route);
+route();
+
+$("#navToggle").addEventListener("click", () => {
+  const open = $("#nav").classList.toggle("open");
+  $("#navToggle").setAttribute("aria-expanded", String(open));
+});
+
+// calculator
+const fmt = n => "$" + Math.round(n).toLocaleString("en-US");
+function calc() {
+  const calls = +$("#cCalls").value, miss = +$("#cMiss").value, book = +$("#cBook").value, ticket = +$("#cTicket").value;
+  $("#oCalls").textContent = calls; $("#oMiss").textContent = miss + "%"; $("#oBook").textContent = book + "%"; $("#oTicket").textContent = fmt(ticket);
+  const missed = calls * 52 / 12 * miss / 100, jobs = missed * book / 100, rev = jobs * ticket;
+  $("#rMissed").textContent = Math.round(missed); $("#rJobs").textContent = Math.round(jobs);
+  $("#rRev").textContent = fmt(rev); $("#rYear").textContent = fmt(rev * 12);
+}
+["#cCalls", "#cMiss", "#cBook", "#cTicket"].forEach(id => $(id).addEventListener("input", calc));
+calc();
+
+// replay the sample call
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+let playing = false;
+$("#replay").addEventListener("click", () => {
+  if (playing || reduce) return;
+  playing = true;
+  const items = [...$$("#log li"), $("#appt")];
+  items.forEach(el => el.classList.add("pending"));
+  items.forEach((el, i) => setTimeout(() => {
+    el.classList.remove("pending");
+    if (i === items.length - 1) playing = false;
+  }, 450 + i * 900));
+});
+</script>
+
+</body></html>
